@@ -1,0 +1,22 @@
+{
+  "name": "api-server",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "knex": "^3.3.0",
+    "pg": "^8.23.1",
+    "restify": "^12.1.0",
+    "restify-cors-middleware2": "^2.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
