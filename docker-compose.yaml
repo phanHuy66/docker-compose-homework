@@ -27,7 +27,7 @@ services:
     build: ./api-server
     image: api_image
     container_name: api_1
-    command: bash -c "npm start"
+    command: bash -c "knex migrate:latest && knex seed:run && npm start"
     ports:
       - "8080:8080"
     volumes:
@@ -38,12 +38,19 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:8080/room', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   
   frontend:
     build: ./frontend-react
     image: frontend_image
     container_name: frontend_1
     command: bash -c "npm start"
+
     ports:
       - "3000:3000"
     volumes:

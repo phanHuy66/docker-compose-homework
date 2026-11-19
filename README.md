@@ -29,31 +29,43 @@ Hệ thống gồm 3 dịch vụ:
 - api: Node.js Restify
 - frontend: React
 
-## 3. Khởi tạo database lần đầu
 
-Mở Terminal mới, truy cập container API:
+## 3. Khởi tạo database tự động
 
-```bash
-docker exec -it api_1 /bin/bash
-```
-
-Chạy Migration để tạo cấu trúc bảng:
+Khi chạy:
 
 ```bash
-knex migrate:latest
+docker compose up
 ```
 
-Chạy Seeding để thêm dữ liệu mẫu:
+Docker Compose sẽ thực hiện theo thứ tự:
+
+1. Khởi động PostgreSQL và đợi database healthy.
+2. Backend tự động chạy:
+   - `knex migrate:latest`: Tạo các bảng chưa tồn tại.
+   - `knex seed:run`: Thêm dữ liệu mẫu nếu bảng đang trống.
+   - `npm start`: Khởi động Backend API.
+3. Frontend React khởi động sau khi Backend healthy.
+
+Không cần chạy Migration và Seeding thủ công.
+
+### Kiểm tra
+
+Xem trạng thái các container:
 
 ```bash
-knex seed:run
+docker compose ps
 ```
 
-Thoát container:
+Kiểm tra log Backend:
 
 ```bash
-exit
+docker compose logs --tail=50 api
 ```
+
+**Lưu ý:** Khi thay đổi Dockerfile hoặc cài thêm thư viện,
+sử dụng `docker compose up --build` để build lại image.
+
 
 ## 4. Truy cập ứng dụng
 
