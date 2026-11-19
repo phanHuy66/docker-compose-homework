@@ -9,7 +9,7 @@ function Room(props) {
 }
 
 function App() {
-    var api = "https://opulent-chainsaw-69xq9pjwv4jx2pw7-8080.app.github.dev/room";
+    var api = "/room";
 
     const { data, error, isLoading } = useSWR(api, fetcher);
 
