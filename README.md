@@ -67,19 +67,28 @@ docker compose logs --tail=50 api
 sử dụng `docker compose up --build` để build lại image.
 
 
+
 ## 4. Truy cập ứng dụng
 
 - Frontend React: cổng 3000
 - Backend API: cổng 8080
-- Danh sách phòng: endpoint /room
+- Danh sách phòng: endpoint `/room`
 
-Nếu dùng GitHub Codespaces, cần cập nhật URL API trong
-`frontend-react/src/App.js` theo địa chỉ cổng 8080
-của Codespace hiện tại.
+### Trên GitHub Codespaces
 
-Để frontend gọi API qua URL Codespaces theo cấu hình
-hiện tại, cổng 8080 cần cho phép truy cập phù hợp.
-Chỉ đặt Public cho API dữ liệu mẫu khi cần thiết.
+1. Chạy `docker compose up`.
+2. Mở tab Ports trong Codespaces.
+3. Truy cập cổng 3000 để xem trang React.
+4. Trang chủ sẽ hiển thị danh sách phòng từ PostgreSQL.
+
+Frontend sử dụng React Proxy để chuyển tiếp request
+`/room` tới `http://api:8080/room`.
+
+Không cần sửa URL API trong `App.js` khi chuyển sang Codespace mới.
+
+Cổng 8080 có thể giữ ở chế độ Private.
+```
+
 
 ## 5. Khi thêm package mới
 
