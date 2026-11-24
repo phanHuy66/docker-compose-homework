@@ -11,6 +11,7 @@
     "start": "nodemon index.js"
   },
   "dependencies": {
+    "jsonwebtoken": "^9.0.3",
     "knex": "^3.3.0",
     "pg": "^8.23.1",
     "restify": "^12.1.0",
