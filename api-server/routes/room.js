@@ -1,52 +1,34 @@
 const Router = require('restify-router').Router;
 const router = new Router();
-const format = require('pg-format');
 
-const { getPgClient } = require('../models/db');
+
+
+const Room = require('../models/room');
 const { authenticated } = require('./authenticate');
 
-router.get('/room', async function(req, res) {
-    const client = getPgClient();
 
-    var sql = "select * from room";
-    var result = [];
-
-    try {
-        await client.connect();
-        result = await client.query(sql);
-        result = result.rows;
-    } catch (e) {
-        console.log(e);
-    } finally {
-        await client.end();
-    }
+router.get('/room', async (req, res) => {
+    const result = await Room.all();
 
     res.send({
         rooms: result
     });
 });
 
+
+
 router.get('/room/:id', async (req, res) => {
     const id = req.params.id;
-    const client = getPgClient();
 
     try {
-        const sql = format(
-            "SELECT * FROM room WHERE room_id = %L",
-            id
-        );
-
-        await client.connect();
-        const result = await client.query(sql);
-
-        const found = result.rows.length > 0;
+        const { found, data } = await Room.byId(id);
 
         if (found) {
             res.send({
                 success: true,
                 code: 200,
                 message: "",
-                data: result.rows[0]
+                data: data
             });
         } else {
             res.send(404, {
@@ -55,7 +37,6 @@ router.get('/room/:id', async (req, res) => {
                 message: "Cannot find room with id: " + id
             });
         }
-
     } catch (error) {
         console.error("Error getting room:", error);
 
@@ -64,15 +45,9 @@ router.get('/room/:id', async (req, res) => {
             code: 500,
             message: "Failed to get room"
         });
-
-    } finally {
-        try {
-            await client.end();
-        } catch (error) {
-            console.error("Error closing database connection:", error);
-        }
     }
 });
+
 
 router.post('/room', authenticated, async (req, res) => {
     
@@ -105,18 +80,10 @@ router.post('/room', authenticated, async (req, res) => {
         return;
     }
 
-    // 5. Thêm phòng vào PostgreSQL
-    const client = getPgClient();
-
+    
+    // 5. Thêm phòng thông qua Model
     try {
-        const sql = format(
-            "INSERT INTO room (name, price) VALUES (%L, %L)",
-            name, price
-        );
-
-        await client.connect();
-        await client.query(sql);
-
+        await Room.add(name, price);
     } catch (error) {
         console.error("Error inserting room:", error);
 
@@ -126,14 +93,8 @@ router.post('/room', authenticated, async (req, res) => {
             message: "Failed to add room"
         });
         return;
-
-    } finally {
-        try {
-            await client.end();
-        } catch (error) {
-            console.error("Error closing database connection:", error);
-        }
     }
+
 
     // 6. Trả response sau khi INSERT hoàn tất
     res.send({
@@ -167,19 +128,12 @@ router.del('/room/:id', authenticated, async (req, res) => {
         return;
     }
 
-    // 5. Xóa phòng trong PostgreSQL
-    const client = getPgClient();
-    let result;
+    
+    // 5. Xóa phòng thông qua Model
+    let found;
 
     try {
-        const sql = format(
-            "DELETE FROM room WHERE room_id = %L",
-            id
-        );
-
-        await client.connect();
-        result = await client.query(sql);
-
+        found = await Room.remove(id);
     } catch (error) {
         console.error("Error deleting room:", error);
 
@@ -189,17 +143,11 @@ router.del('/room/:id', authenticated, async (req, res) => {
             message: "Failed to delete room"
         });
         return;
-
-    } finally {
-        try {
-            await client.end();
-        } catch (error) {
-            console.error("Error closing database connection:", error);
-        }
     }
 
+
     // 6. Kiểm tra phòng có được xóa hay không
-    const found = result.rowCount > 0;
+
 
     if (found) {
         res.send({
@@ -258,19 +206,11 @@ router.patch('/room/:id', authenticated, async (req, res) => {
         return;
     }
 
-    // 5. Cập nhật thông tin phòng
-    const client = getPgClient();
-    let result;
+        // 5. Cập nhật phòng thông qua Model
+    let found;
 
     try {
-        const sql = format(
-            "UPDATE room SET name = %L, price = %L WHERE room_id = %L",
-            name, price, id
-        );
-
-        await client.connect();
-        result = await client.query(sql);
-
+        found = await Room.update(id, name, price);
     } catch (error) {
         console.error("Error updating room:", error);
 
@@ -280,17 +220,10 @@ router.patch('/room/:id', authenticated, async (req, res) => {
             message: "Failed to update room"
         });
         return;
-
-    } finally {
-        try {
-            await client.end();
-        } catch (error) {
-            console.error("Error closing database connection:", error);
-        }
     }
 
     // 6. Kiểm tra kết quả UPDATE
-    if (result.rowCount > 0) {
+    if (found) {
         res.send({
             success: true,
             code: 200,
