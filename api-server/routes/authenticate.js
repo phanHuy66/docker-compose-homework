@@ -36,4 +36,12 @@ function authenticated(req, res, next) {
     return next();
 }
 
-module.exports = { authenticated };
+function sign(username, role) {
+    return jwt.sign(
+        { username, role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+}
+
+module.exports = { authenticated, sign };
